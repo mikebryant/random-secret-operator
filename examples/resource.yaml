@@ -1,0 +1,7 @@
+apiVersion: randomsecrets.mikebryant.me.uk/v1alpha1
+kind: RandomSecret
+metadata:
+  name: django
+  namespace: app
+spec:
+  length: 24
