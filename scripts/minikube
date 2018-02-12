@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+${scriptdir}/build
+kubectl apply -f ${scriptdir}/../examples/
+kubectl delete pod -l app=random-secret-operator

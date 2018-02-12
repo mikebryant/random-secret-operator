@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Rook Authors. All rights reserved.
+Copyright 2018 Mike Bryant. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,4 +18,4 @@ limitations under the License.
 
 // Package v1 is the v1 version of the API.
 // +groupName=randomsecrets
-package v1alpha1
+package v1

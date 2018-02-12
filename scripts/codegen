@@ -20,4 +20,4 @@ cd ${scriptdir}/../vendor/k8s.io/code-generator && ./generate-groups.sh \
   all \
   github.com/mikebryant/random-secret-operator/pkg/client \
   github.com/mikebryant/random-secret-operator/pkg/apis \
-  "randomsecrets:v1alpha1" \
+  "randomsecrets:v1" \

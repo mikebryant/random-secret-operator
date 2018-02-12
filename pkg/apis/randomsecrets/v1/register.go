@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Rook Authors. All rights reserved.
+Copyright 2018 Mike Bryant. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 for a sample crd
-package v1alpha1
+// Package v1 for the random secret crd
+package v1
 
 import (
 	"reflect"
@@ -60,8 +60,8 @@ func Resource(resource string) schema.GroupResource {
 // Adds the list of known types to api.Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&Sample{},
-		&SampleList{},
+		&RandomSecret{},
+		&RandomSecretList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
