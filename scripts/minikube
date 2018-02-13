@@ -3,5 +3,7 @@
 scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ${scriptdir}/build
+eval $(minikube docker-env)
+docker build -t mikebryant/random-secret-operator:0.0.1 .
 kubectl apply -f ${scriptdir}/../examples/
 kubectl delete pod -l app=random-secret-operator

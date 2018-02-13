@@ -4,6 +4,17 @@ metadata:
   name: random-secret-operator
 rules:
 - apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+  - update
+- apiGroups:
   - extensions
   resources:
   - thirdpartyresources

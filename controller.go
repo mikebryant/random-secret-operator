@@ -23,6 +23,8 @@ import (
 	randomsecrets "github.com/mikebryant/random-secret-operator/pkg/apis/randomsecrets/v1"
 	randomsecretsclient "github.com/mikebryant/random-secret-operator/pkg/client/clientset/versioned/typed/randomsecrets/v1"
 	opkit "github.com/rook/operator-kit"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -57,7 +59,11 @@ func (c *RandomSecretController) StartWatch(namespace string, stopCh chan struct
 func (c *RandomSecretController) onAdd(obj interface{}) {
 	s := obj.(*randomsecrets.RandomSecret).DeepCopy()
 
-	fmt.Printf("Added RandomSecret '%s' with Spec=%s\n", s.Name, s.Spec)
+	fmt.Printf("Adding RandomSecret '%s' with Spec=%s...\n", s.Name, s.Spec)
+	_, err := c.context.Clientset.CoreV1().Secrets(s.Namespace).Get(s.Name, metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		fmt.Printf("Creating Secret '%s'\n", s.Name)
+	}
 }
 
 func (c *RandomSecretController) onUpdate(oldObj, newObj interface{}) {
