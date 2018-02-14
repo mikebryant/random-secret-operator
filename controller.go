@@ -20,12 +20,18 @@ package main
 import (
 	"fmt"
 
+	"crypto/rand"
+
+	"encoding/hex"
+
 	randomsecrets "github.com/mikebryant/random-secret-operator/pkg/apis/randomsecrets/v1"
 	randomsecretsclient "github.com/mikebryant/random-secret-operator/pkg/client/clientset/versioned/typed/randomsecrets/v1"
 	opkit "github.com/rook/operator-kit"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/retry"
 )
 
 // RandomSecretController represents a controller object for random secret custom resources
@@ -56,25 +62,88 @@ func (c *RandomSecretController) StartWatch(namespace string, stopCh chan struct
 	return nil
 }
 
-func (c *RandomSecretController) onAdd(obj interface{}) {
-	s := obj.(*randomsecrets.RandomSecret).DeepCopy()
+func (c *RandomSecretController) generateData() []byte {
+	src := make([]byte, 64)
+	_, err := rand.Read(src)
+	if err != nil {
+		panic(err)
+	}
+	val := make([]byte, hex.EncodedLen(len(src)))
+	hex.Encode(val, src)
+	return val
+}
 
-	fmt.Printf("Adding RandomSecret '%s' with Spec=%s...\n", s.Name, s.Spec)
-	_, err := c.context.Clientset.CoreV1().Secrets(s.Namespace).Get(s.Name, metav1.GetOptions{})
-	if errors.IsNotFound(err) {
-		fmt.Printf("Creating Secret '%s'\n", s.Name)
+func (c *RandomSecretController) updateSecret(rs *randomsecrets.RandomSecret, s *v1.Secret) {
+	blockOwnerDeletion := true
+	controller := true
+	s.OwnerReferences = []metav1.OwnerReference{
+		{
+			APIVersion:         randomsecrets.RandomSecretResource.Version,
+			BlockOwnerDeletion: &blockOwnerDeletion,
+			Controller:         &controller,
+			Kind:               randomsecrets.RandomSecretResource.Kind,
+			Name:               rs.Name,
+			UID:                rs.UID,
+		},
+	}
+	if s.Data == nil {
+		s.Data = make(map[string][]byte)
+	}
+	if val, ok := s.Data["random"]; !ok || len(val) < 128 {
+		fmt.Printf("Adding data to Secret '%s'...\n", s.Name)
+		s.Data["random"] = c.generateData()
 	}
 }
 
-func (c *RandomSecretController) onUpdate(oldObj, newObj interface{}) {
-	oldRandomSecret := oldObj.(*randomsecrets.RandomSecret).DeepCopy()
-	newRandomSecret := newObj.(*randomsecrets.RandomSecret).DeepCopy()
+func (c *RandomSecretController) ensureSecret(obj *randomsecrets.RandomSecret) {
+	secretsClient := c.context.Clientset.CoreV1().Secrets(obj.Namespace)
+	s, err := secretsClient.Get(obj.Name, metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		fmt.Printf("Creating Secret '%s'...\n", obj.Name)
+		s = &v1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      obj.Name,
+				Namespace: obj.Namespace,
+			},
+		}
+		c.updateSecret(obj, s)
+		_, err := secretsClient.Create(s)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			s, getErr := secretsClient.Get(obj.Name, metav1.GetOptions{})
+			if getErr != nil {
+				panic(fmt.Errorf("Failed to get Secret '%s': %v", s.Name, getErr))
+			}
 
-	fmt.Printf("Updated RandomSecret '%s' from %s to %s\n", newRandomSecret.Name, oldRandomSecret.Spec, newRandomSecret.Spec)
+			c.updateSecret(obj, s)
+			_, updateErr := secretsClient.Update(s)
+			return updateErr
+		})
+		if retryErr != nil {
+			panic(fmt.Errorf("Update failed: %v", retryErr))
+		}
+	}
+}
+
+func (c *RandomSecretController) onAdd(obj interface{}) {
+	s := obj.(*randomsecrets.RandomSecret).DeepCopy()
+	fmt.Printf("Add event: RandomSecret '%s/%s' with Spec=%s...\n", s.Namespace, s.Name, s.Spec)
+
+	c.ensureSecret(s)
+}
+
+func (c *RandomSecretController) onUpdate(oldObj, newObj interface{}) {
+	s := newObj.(*randomsecrets.RandomSecret).DeepCopy()
+	fmt.Printf("Update event: RandomSecret '%s/%s' with Spec=%s...\n", s.Namespace, s.Name, s.Spec)
+
+	c.ensureSecret(s)
 }
 
 func (c *RandomSecretController) onDelete(obj interface{}) {
 	s := obj.(*randomsecrets.RandomSecret).DeepCopy()
-
-	fmt.Printf("Deleted RandomSecret '%s' with Spec=%s\n", s.Name, s.Spec)
+	fmt.Printf("Delete event: RandomSecret '%s/%s' with Spec=%s...\n", s.Namespace, s.Name, s.Spec)
+	// We ignore this, and allow garbage collection to handle it
 }
