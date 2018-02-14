@@ -34,13 +34,13 @@ var (
 )
 
 // schemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = schema.GroupVersion{Group: "randomsecrets.mikebryant.me.uk", Version: "v1alpha1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: "randomsecrets.mikebryant.me.uk", Version: "v1"}
 
 var RandomSecretResource = opkit.CustomResource{
 	Name:    "randomsecret",
 	Plural:  "randomsecrets",
 	Group:   "randomsecrets.mikebryant.me.uk",
-	Version: "v1alpha1",
+	Version: "v1",
 	Scope:   apiextensionsv1beta1.NamespaceScoped,
 	Kind:    reflect.TypeOf(RandomSecret{}).Name(),
 }

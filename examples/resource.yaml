@@ -1,5 +1,5 @@
 ---
-apiVersion: randomsecrets.mikebryant.me.uk/v1alpha1
+apiVersion: randomsecrets.mikebryant.me.uk/v1
 kind: RandomSecret
 metadata:
   name: minimal
