@@ -33,7 +33,7 @@ var (
 	AddToScheme        = SchemeBuilder.AddToScheme
 )
 
-// schemeGroupVersion is group version used to register these objects
+// SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: "randomsecrets.mikebryant.me.uk", Version: "v1"}
 
 var RandomSecretResource = opkit.CustomResource{

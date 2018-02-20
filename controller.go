@@ -48,7 +48,7 @@ func newRandomSecretController(context *opkit.Context, randomSecretClientset ran
 	}
 }
 
-// Watch watches for instances of RandomSecret custom resources and acts on them
+// StartWatch watches for instances of RandomSecret custom resources and acts on them
 func (c *RandomSecretController) StartWatch(namespace string, stopCh chan struct{}) error {
 
 	resourceHandlers := cache.ResourceEventHandlerFuncs{
@@ -95,9 +95,9 @@ func (c *RandomSecretController) updateSecret(rs *randomsecrets.RandomSecret, s 
 	}
 }
 
+// ensureSecret ensures that the Secret object exists and is valid for the provided RandomSecret
+// Create if necessary, and update if the parameters are wrong
 func (c *RandomSecretController) ensureSecret(obj *randomsecrets.RandomSecret) {
-	// Ensure that the Secret object exists and is valid for the provided RandomSecret
-	// Create if necessary, and update if the parameters are wrong
 	secretsClient := c.context.Clientset.CoreV1().Secrets(obj.Namespace)
 	s, err := secretsClient.Get(obj.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
