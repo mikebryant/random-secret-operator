@@ -96,6 +96,8 @@ func (c *RandomSecretController) updateSecret(rs *randomsecrets.RandomSecret, s 
 }
 
 func (c *RandomSecretController) ensureSecret(obj *randomsecrets.RandomSecret) {
+	// Ensure that the Secret object exists and is valid for the provided RandomSecret
+	// Create if necessary, and update if the parameters are wrong
 	secretsClient := c.context.Clientset.CoreV1().Secrets(obj.Namespace)
 	s, err := secretsClient.Get(obj.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
