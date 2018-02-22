@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+${scriptdir}/codegen
+CGO_ENABLED=0 GOOS=linux go build

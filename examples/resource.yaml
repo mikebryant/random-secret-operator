@@ -1,0 +1,7 @@
+---
+apiVersion: randomsecrets.mikebryant.me.uk/v1
+kind: RandomSecret
+metadata:
+  name: minimal
+  namespace: default
+spec: {}
