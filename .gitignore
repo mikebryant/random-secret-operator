@@ -1,4 +1,0 @@
-pkg/apis/randomsecrets/v1alpha1/zz_generated.deepcopy.go
-pkg/client
-random-secret-operator
-vendor

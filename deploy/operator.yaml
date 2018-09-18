@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: randomsecret
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: randomsecrets.randomsecrets.mikebryant.me.uk
+spec:
+  group: randomsecrets.mikebryant.me.uk
+  version: v1
+  scope: Namespaced
+  names:
+    plural: randomsecrets
+    singular: randomsecret
+    kind: RandomSecret
+---
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: randomsecret-operator
+spec:
+  generateSelector: true
+  parentResource:
+    apiVersion: randomsecrets.mikebryant.me.uk/v1
+    resource: randomsecrets
+  childResources:
+    - apiVersion: v1
+      resource: secrets
+      resyncPeriodSeconds: 600
+      updateStrategy:
+        method: InPlace
+  hooks:
+    sync:
+      webhook:
+        path: /
+        service:
+          name: randomsecret-operator
+          namespace: randomsecret
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: randomsecret-operator
+  namespace: randomsecret
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: randomsecret-operator
+  template:
+    metadata:
+      labels:
+        app: randomsecret-operator
+    spec:
+      containers:
+      - name: randomsecret-operator
+        command:
+        - python
+        - /hooks/sync.py
+        image: python:3.7
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - name: hooks
+          mountPath: /hooks
+      volumes:
+      - name: hooks
+        configMap:
+          name: code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: randomsecret-operator
+  namespace: randomsecret
+spec:
+  selector:
+    app: randomsecret-operator
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
