@@ -12,7 +12,7 @@ Follow [the upstream guide](https://metacontroller.app/guide/install/)
 ```bash
 # Create the operator
 $ kubectl apply -f deploy/operator.yaml
-$ kubectl create configmap code -n randomsecret --from-file=sync.py
+$ kubectl apply -f deploy/code.yaml
 
 # Wait for the pod status to be Running
 $ kubectl --namespace randomsecret get pod
