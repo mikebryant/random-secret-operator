@@ -5,6 +5,7 @@ cleanup() {
   echo "Clean up..."
   kubectl delete -f examples/resource.yaml
   kubectl delete -f deploy/operator.yaml
+  kubectl delete -f deploy/code.yaml
   until ! kubectl get namespace randomsecret; do sleep 1; done
 }
 trap cleanup EXIT
@@ -17,7 +18,7 @@ kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/metacontr
 
 echo "Install controller..."
 kubectl apply -f deploy/operator.yaml
-kubectl create configmap code -n randomsecret --from-file=sync.py
+kubectl apply -f deploy/code.yaml
 
 echo "Wait until CRD is available..."
 until kubectl get randomsecrets; do sleep 1; done
