@@ -16,6 +16,19 @@ spec:
     plural: randomsecrets
     singular: randomsecret
     kind: RandomSecret
+  validation:
+    openAPIV3Schema:
+      description: RandomSecret will create a Secret with the same name as this object. There will be a filed `.data.random` which will contain random data. This will persist until the RandomSecret or Secret is deleted.
+      properties:
+        spec:
+          properties:
+            length:
+              description: The length of the secret. Defaults to 64 if not specified
+              format: int32
+              type: integer
+              minimum: 1
+              maximum: 128
+          required: []
 ---
 apiVersion: metacontroller.k8s.io/v1alpha1
 kind: CompositeController
@@ -44,7 +57,6 @@ apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: randomsecret-operator
-  namespace: randomsecret
 spec:
   replicas: 1
   selector:
@@ -59,6 +71,7 @@ spec:
       - name: randomsecret-operator
         command:
         - python
+        - -u
         - /hooks/sync.py
         image: python:3.7
         imagePullPolicy: IfNotPresent
@@ -68,6 +81,7 @@ spec:
         volumeMounts:
         - name: hooks
           mountPath: /hooks
+      terminationGracePeriodSeconds: 0
       volumes:
       - name: hooks
         configMap:
@@ -77,7 +91,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: randomsecret-operator
-  namespace: randomsecret
 spec:
   selector:
     app: randomsecret-operator

@@ -1,0 +1,8 @@
+---
+apiVersion: randomsecrets.mikebryant.me.uk/v1
+kind: RandomSecret
+metadata:
+  name: too-long
+  namespace: default
+spec:
+  length: 9999999999

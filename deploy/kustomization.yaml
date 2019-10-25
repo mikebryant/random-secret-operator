@@ -1,3 +1,7 @@
+configMapGenerator:
+- name: code
+  files:
+  - sync.py
+namespace: randomsecret
 resources:
 - operator.yaml
-- code.yaml
