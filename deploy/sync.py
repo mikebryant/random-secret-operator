@@ -58,7 +58,7 @@ class Controller(BaseHTTPRequestHandler):
         spec = randomsecret.get('spec', {})
 
         desired_field_name = 'random'
-        desired_length = spec.get('length', 64)
+        desired_length = spec.get('length', 128)
 
         # Find existing secret, if it exists
         desired_name = randomsecret['metadata']['name']
