@@ -20,23 +20,45 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import base64
 import json
 import copy
+import logging
 import re
 import secrets
 
+logging.basicConfig(level=logging.DEBUG)
+LOGGER = logging.getLogger(__name__)
 
 def is_acceptable(
     data,
     desired_bytes,
+    metadata,
 ):
-    return len(data)/2 >= desired_bytes
+    if len(data) == desired_bytes:
+        return True
+    else:
+        LOGGER.info(
+            '%s/%s: Existing length %d != desired length %d',
+            metadata['namespace'],
+            metadata['name'],
+            len(data),
+            desired_bytes,
+        )
+        return False
 
 class Controller(BaseHTTPRequestHandler):
     def sync(self, randomsecret, children):
 
+        LOGGER.debug(
+            'Reconciling %s/%s...',
+            randomsecret['metadata']['namespace'],
+            randomsecret['metadata']['name'],
+        )
+
         complete = False
 
+        spec = randomsecret.get('spec', {})
+
         desired_field_name = 'random'
-        desired_bytes = 64
+        desired_length = spec.get('length', 64)
 
         # Find existing secret, if it exists
         desired_name = randomsecret['metadata']['name']
@@ -55,13 +77,14 @@ class Controller(BaseHTTPRequestHandler):
 
         if is_acceptable(
             data=existing_random_data,
-            desired_bytes=desired_bytes,
+            desired_bytes=desired_length,
+            metadata=randomsecret['metadata'],
         ):
             complete = True
         else:
             existing_random_data = secrets.token_hex(
-                desired_bytes,
-            ).encode('utf-8')
+                desired_length,
+            ).encode('utf-8')[:desired_length]
 
 
         desired_secret = {

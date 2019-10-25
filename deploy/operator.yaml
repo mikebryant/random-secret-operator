@@ -16,6 +16,19 @@ spec:
     plural: randomsecrets
     singular: randomsecret
     kind: RandomSecret
+  validation:
+    openAPIV3Schema:
+      description: RandomSecret will create a Secret with the same name as this object. There will be a filed `.data.random` which will contain random data. This will persist until the RandomSecret or Secret is deleted.
+      properties:
+        spec:
+          properties:
+            length:
+              description: The length of the secret. Defaults to 64 if not specified
+              format: int32
+              type: integer
+              minimum: 1
+              maximum: 128
+          required: []
 ---
 apiVersion: metacontroller.k8s.io/v1alpha1
 kind: CompositeController
