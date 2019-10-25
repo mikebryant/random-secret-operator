@@ -23,7 +23,7 @@ spec:
         spec:
           properties:
             length:
-              description: The length of the secret. Defaults to 64 if not specified
+              description: The length of the secret. Defaults to 128 if not specified
               format: int32
               type: integer
               minimum: 1
