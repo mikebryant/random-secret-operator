@@ -73,7 +73,7 @@ spec:
         - python
         - -u
         - /hooks/sync.py
-        image: python:3.7
+        image: python:3.7-alpine
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
