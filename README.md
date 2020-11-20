@@ -11,8 +11,7 @@ Follow [the upstream guide](https://metacontroller.app/guide/install/)
 
 ```bash
 # Create the operator
-$ kubectl apply -f deploy/operator.yaml
-$ kubectl apply -f deploy/code.yaml
+$ kubectl apply -k deploy
 
 # Wait for the pod status to be Running
 $ kubectl --namespace randomsecret get pod
