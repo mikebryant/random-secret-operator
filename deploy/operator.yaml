@@ -28,7 +28,6 @@ spec:
               type: integer
               minimum: 1
               maximum: 128
-          required: []
 ---
 apiVersion: metacontroller.k8s.io/v1alpha1
 kind: CompositeController
