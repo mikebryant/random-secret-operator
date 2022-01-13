@@ -16,6 +16,8 @@ spec:
     plural: randomsecrets
     singular: randomsecret
     kind: RandomSecret
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: RandomSecret will create a Secret with the same name as this object. There will be a filed `.data.random` which will contain random data. This will persist until the RandomSecret or Secret is deleted.
